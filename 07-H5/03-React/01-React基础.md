@@ -300,8 +300,6 @@ export default TodoListDemo
 
 ### props传递数据
 
-![image-20221128234850550](img/image-20221128234850550.png)
-
 ### props传递函数
 
 ### props类型检查
@@ -453,13 +451,142 @@ export default StateDemo
 
 ## 性能优化
 
-## shouldComponentUpdate
+### shouldComponentUpdate
 
-## 纯组件
+- SCU默认返回true，即React默认重新渲染所有子组件
+- 必须配合“不可变值”一起使用
+- 可先不用SCU，有性能问题时再考虑使用
 
-## 不可变immutablejs
+### PureComponent & memo
 
-## 高阶组件
+- PureComponent在SCU中实现了浅比较
+- memo，函数组件中的PureComponent
+- 浅比较已经适用大部分情况（尽量不要做深度比较）
+
+<img src="img/image-20221201225037984.png" alt="image-20221201225037984" style="zoom:50%;" />
+
+### immutable.js
+
+- 彻底拥抱“不可变值”
+- 基于共享数据（不是深拷贝），速度快
+- 有一定的学习和迁移成本，按需使用
+
+### 按需使用 & state 层级
+
+## 公共逻辑抽离
+
+### 高阶组件HOC（High Order Components）
+
+- 模式简单，但会增加组件层级
+
+<img src="img/image-20221201222525095.png" alt="image-20221201222525095" style="zoom:50%;" />
+
+<img src="img/image-20221201223445778.png" alt="image-20221201223445778" style="zoom:50%;" />
+
+<img src="img/image-20221201223802000.png" alt="image-20221201223802000" style="zoom:50%;" />
+
+```jsx
+import React from 'react'
+
+// 高阶组件
+const withMouse = (Component) => {
+    class withMouseComponent extends React.Component {
+        constructor(props) {
+            super(props)
+            this.state = { x: 0, y: 0 }
+        }
+  
+        handleMouseMove = (event) => {
+            this.setState({
+                x: event.clientX,
+                y: event.clientY
+            })
+        }
+  
+        render() {
+            return (
+                <div style={{ height: '500px' }} onMouseMove={this.handleMouseMove}>
+                    {/* 1. 透传所有 props 2. 增加 mouse 属性 */}
+                    <Component {...this.props} mouse={this.state}/>
+                </div>
+            )
+        }
+    }
+    return withMouseComponent
+}
+
+const App = (props) => {
+    const a = props.a
+    const { x, y } = props.mouse // 接收 mouse 属性
+    return (
+        <div style={{ height: '500px' }}>
+            <h1>The mouse position is ({x}, {y})</h1>
+            <p>{a}</p>
+        </div>
+    )
+}
+
+export default withMouse(App) // 返回高阶函数
+```
+
+
+
+### Render Props
+
+- 代码简洁，学习成本高
+
+![image-20221128234850550](img/image-20221128234850550.png)
+
+```jsx
+import React from 'react'
+import PropTypes from 'prop-types'
+
+class Mouse extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = { x: 0, y: 0 }
+    }
+  
+    handleMouseMove = (event) => {
+      this.setState({
+        x: event.clientX,
+        y: event.clientY
+      })
+    }
+  
+    render() {
+      return (
+        <div style={{ height: '500px' }} onMouseMove={this.handleMouseMove}>
+            {/* 将当前 state 作为 props ，传递给 render （render 是一个函数组件） */}
+            {this.props.render(this.state)}
+        </div>
+      )
+    }
+}
+Mouse.propTypes = {
+    render: PropTypes.func.isRequired // 必须接收一个 render 属性，而且是函数
+}
+
+const App = (props) => (
+    <div style={{ height: '500px' }}>
+        <p>{props.a}</p>
+        <Mouse render={
+            /* render 是一个函数组件 */
+            ({ x, y }) => <h1>The mouse position is ({x}, {y})</h1>
+        }/>
+        
+    </div>
+)
+
+/**
+ * 即，定义了 Mouse 组件，只有获取 x y 的能力。
+ * 至于 Mouse 组件如何渲染，App 说了算，通过 render prop 的方式告诉 Mouse 。
+ */
+
+export default App
+```
+
+
 
 # 周边工具
 

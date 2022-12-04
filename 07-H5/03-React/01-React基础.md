@@ -435,23 +435,260 @@ export default StateDemo
 
 ![image-20221127204221840](img/image-20221127204221840.png)
 
-# 高级使用
+# 高级特性
 
 ## 函数组件
 
-## 受控和非受控组件
+- 纯函数，输入props，输出JSX
+- 没有实例，没有生命周期，没有state
+- 不能扩展其他方法
 
-## refs
+<img src="img/image-20221203120801489.png" alt="image-20221203120801489" style="zoom:50%;" />
+
+## 受控组件
+
+## 非受控组件
+
+- ref
+- defaultValue defaultChecked
+- 手动操作DOM元素
+
+> 使用场景：
+>
+> 1. 必须手动操作DOM元素，setState实现不了
+>
+> 2. 文件上传<input type=file>
+>
+> 3. 某些富文本编辑器，需要传入DOM元素
+>
+>    
+>
+> 受控组件 vs 非受控组件:
+>
+> 1. 优先使用受控组件，符合React设计原则
+> 2. 必须操作DOM时，在使用非受控组件
+
+```jsx
+import React from 'react'
+
+class App extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            name: '双越',
+            flag: true,
+        }
+        this.nameInputRef = React.createRef() // 创建 ref
+        this.fileInputRef = React.createRef()
+    }
+    render() {
+        // // input defaultValue
+        // return <div>
+        //     {/* 使用 defaultValue 而不是 value ，使用 ref */}
+        //     <input defaultValue={this.state.name} ref={this.nameInputRef}/>
+        //     {/* state 并不会随着改变 */}
+        //     <span>state.name: {this.state.name}</span>
+        //     <br/>
+        //     <button onClick={this.alertName}>alert name</button>
+        // </div>
+
+        // // checkbox defaultChecked
+        // return <div>
+        //     <input
+        //         type="checkbox"
+        //         defaultChecked={this.state.flag}
+        //     />
+        // </div>
+
+        // file
+        return <div>
+            <input type="file" ref={this.fileInputRef}/>
+            <button onClick={this.alertFile}>alert file</button>
+        </div>
+    }
+    alertName = () => {
+        const elem = this.nameInputRef.current // 通过 ref 获取 DOM 节点
+        alert(elem.value) // 不是 this.state.name
+    }
+    alertFile = () => {
+        const elem = this.fileInputRef.current // 通过 ref 获取 DOM 节点
+        alert(elem.files[0].name)
+    }
+}
+
+export default App
+```
+
+
 
 ## Protals
 
+- 组件默认会按照既定层次嵌套渲染
+- 如何让组件渲染到父组件以外？
+
+> 使用场景：
+>
+> - overflow:hidden
+> - 父组件 z-index值太小
+> - fixed需要放在body第一层级
+
+```jsx
+import React from 'react'
+import ReactDOM from 'react-dom'
+import './style.css'
+
+class App extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+        }
+    }
+    render() {
+        // // 正常渲染
+        // return <div className="modal">
+        //     {this.props.children} {/* vue slot */}
+        // </div>
+
+        // 使用 Portals 渲染到 body 上。
+        // fixed 元素要放在 body 上，有更好的浏览器兼容性。
+        return ReactDOM.createPortal(
+            <div className="modal">{this.props.children}</div>,
+            document.body // DOM 节点
+        )
+    }
+}
+
+export default App
+
+
+.modal {
+    position: fixed;
+    width: 300px;
+    height: 100px;
+    top: 100px;
+    left: 50%;
+    margin-left: -150px;
+    background-color: #000;
+    /* opacity: .2; */
+    color: #fff;
+    text-align: center;
+}
+
+```
+
+
+
 ## context
 
+- 公共信息传递
+- 用props太繁琐
+- 用redux小题大做
+
+<img src="img/image-20221203113311746.png" alt="image-20221203113311746" style="zoom: 25%;" />
+
+```jsx
+import React from 'react'
+
+// 创建 Context 填入默认值（任何一个 js 变量）
+const ThemeContext = React.createContext('light')
+
+// 底层组件 - 函数是组件
+function ThemeLink (props) {
+    // const theme = this.context // 会报错。函数式组件没有实例，即没有 this
+
+    // 函数式组件可以使用 Consumer
+    return <ThemeContext.Consumer>
+        { value => <p>link's theme is {value}</p> }
+    </ThemeContext.Consumer>
+}
+
+// 底层组件 - class 组件
+class ThemedButton extends React.Component {
+    // 指定 contextType 读取当前的 theme context。
+    // static contextType = ThemeContext // 也可以用 ThemedButton.contextType = ThemeContext
+    render() {
+        const theme = this.context // React 会往上找到最近的 theme Provider，然后使用它的值。
+        return <div>
+            <p>button's theme is {theme}</p>
+        </div>
+    }
+}
+ThemedButton.contextType = ThemeContext // 指定 contextType 读取当前的 theme context。
+
+// 中间的组件再也不必指明往下传递 theme 了。
+function Toolbar(props) {
+    return (
+        <div>
+            <ThemedButton />
+            <ThemeLink />
+        </div>
+    )
+}
+
+class App extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            theme: 'light'
+        }
+    }
+    render() {
+        return <ThemeContext.Provider value={this.state.theme}>
+            <Toolbar />
+            <hr/>
+            <button onClick={this.changeTheme}>change theme</button>
+        </ThemeContext.Provider>
+    }
+    changeTheme = () => {
+        this.setState({
+            theme: this.state.theme === 'light' ? 'dark' : 'light'
+        })
+    }
+}
+
+export default App
+```
+
 ## 异步组件
+
+- import（）
+- React.lazy
+- React.Suspence
+
+```jsx
+import React from 'react'
+
+const ContextDemo = React.lazy(() => import('./ContextDemo'))
+
+class App extends React.Component {
+    constructor(props) {
+        super(props)
+    }
+    render() {
+        return <div>
+            <p>引入一个动态组件</p>
+            <hr />
+            <React.Suspense fallback={<div>Loading...</div>}>
+                <ContextDemo/>
+            </React.Suspense>
+        </div>
+
+        // 1. 强制刷新，可看到 loading （看不到就限制一下 chrome 网速）
+        // 2. 看 network 的 js 加载
+    }
+}
+
+export default App
+
+```
+
+
 
 ## 性能优化
 
 ### shouldComponentUpdate
+
+<img src="img/image-20221202215511891.png" alt="image-20221202215511891" style="zoom:50%;" />
 
 - SCU默认返回true，即React默认重新渲染所有子组件
 - 必须配合“不可变值”一起使用
@@ -658,13 +895,126 @@ export default App
 
 ## 函数式编程
 
+- 一种编程范式，概念较多
+- 纯函数
+- 不可变值
+
 ## vdom和diff算法
+
+### vdom
+
+- h函数
+- vnode数据结构
+- patch函数
+
+### diff
+
+- 只比较同一层级，不跨级比较
+- tag不相同，则直接删掉重建，不再深度比较
+- tag和key，两者都相同，则认为是相同节点，不再深度比较
 
 ## JSX本质
 
+- JSX等同于Vue模板
+
+- JSX不是JS
+
+- JSX即React.createElement()，即h函数，返回vnode
+
+  - 第一个参数，可能是组件，也可能是html tag
+  - 组件名，首字母必须大写（React规定）
+
+  <img src="img/image-20221203144158297.png" alt="image-20221203144158297" style="zoom:50%;" />
+
+### JSX的编译
+
+![image-20221203142454116](img/image-20221203142454116.png)
+
+## 合成事件
+
+- 所有事件挂载到document上
+- event不是原生的，是SyntheticEvent合成事件对象
+- 和vue事件不同，和DOM事件也不同
+
+<img src="img/image-20221203141209241.png" alt="image-20221203141209241" style="zoom: 67%;" />
+
+#### 为何要合成事件机制？
+
+- 更好的兼容性和跨平台
+- 挂载到document，减少内存消耗，避免频繁解绑
+- 方便事件的统一管理（如事务机制）
+
 ## setState和batchUpdate
 
+### setState主流程
+
+- 有时异步（普通使用），有时同步（setTimeout、Dom事件）
+- 有时合并（对象形式），有时不合并（函数形式）（像Object.assign）
+
+<img src="img/image-20221203133213656.png" alt="image-20221203133213656" style="zoom:50%;" />
+
+<img src="img/image-20221203135309840.png" alt="image-20221203135309840" style="zoom: 67%;" />
+
+#### isBatchingUpdates
+
+<img src="img/image-20221203135605529.png" alt="image-20221203135605529" style="zoom:67%;" />
+
+<img src="img/image-20221203140048849.png" alt="image-20221203140048849" style="zoom: 67%;" />
+
+#### 哪些能命中batchUpdate机制
+
+- 生命周期（和它调用的函数）
+
+- React中注册的事件（和它调用的函数）
+
+- ###### React可以“管理”的入口
+
+#### 哪些不能命中batchUpdate机制
+
+- setTimeout setInterval等（和它调用的函数）
+- 自定义的DOM事件（和它调用的函数）
+- React“管不到”的入口
+
+### transaction事务机制
+
+<img src="img/image-20221203133908165.png" alt="image-20221203133908165" style="zoom:50%;" />
+
+<img src="img/image-20221203133928553.png" alt="image-20221203133928553" style="zoom:80%;" />
+
+<img src="img/image-20221203134110377.png" alt="image-20221203134110377" style="zoom:50%;" />
+
 ## 组件渲染过程
+
+- props state
+- render()生成vnode
+- path（elem，vnode）
+
+## 组件更新过程
+
+- setState（newState）--> dirtyComponents（可能有子组件）
+- render()生成newVnode
+- path（Vnode，newVnode）
+
+### 更新的两个阶段
+
+- reconciliation阶段-执行diff算法，纯JS计算
+- commit阶段- 将diff结果渲染DOM
+
+##### 不分为两个阶段可能会有性能问题
+
+- JS是单线程，且和DOM渲染共用一个线程
+- 当组件足够复杂，阻击爱你更新计算和渲染都压力大
+- 同时再有DOM操作需求（动画、鼠标拖拽等），将卡顿
+
+##### 解决方案fiber
+
+- 将reconciliation阶段进行任务拆分（commit无法拆分）
+- DOM需要渲染时暂停，空闲时恢复
+- window.requestIdleCallback
+
+##### 关于fiber
+
+- React内部运行机制，开发者体会不到
 
 ## 前端路由
 

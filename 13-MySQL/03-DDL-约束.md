@@ -1,24 +1,21 @@
 # DDL-约束
 
-约束
-
 \* 约束是添加在列上的，用来约束列的！
 
-\1. 主键约束（唯一标识）
+## 主键约束（唯一标识）
 
-  ****非空***
+非空
 
-  ****唯一***
+唯一
 
-  ****被引用****（学习外键时）
+被引用（学习外键时）
 
   \* 当表的某一列被指定为主键后，该列就不能为空，不能有重复值出现。
 
   \* 创建表时指定主键的两种方式：
 
-​    \> 
-
-​    CREATE TABLE stu(
+```
+ CREATE TABLE stu(
 
 ​	sid	    CHAR(6) PRIMARY KEY,
 
@@ -29,14 +26,14 @@
 ​	gender	VARCHAR(10) 
 
 ​    );
+```
 
 ​    指定sid列为主键列，即为sid列添加主键约束
 
    ![image-20221029174233724](img/image-20221029174233724.png)
 
-​    \> 
-
-​    CREATE TABLE stu(
+```
+ CREATE TABLE stu(
 
 ​	sid	    CHAR(6),
 
@@ -49,6 +46,7 @@
 ​	PRIMARY KEY(sid)
 
 ​    );
+```
 
 ​    指定sid列为主键列，即为sid列添加主键约束
 
@@ -62,12 +60,13 @@
 
  ![image-20221029174420493](img/image-20221029174420493.png)
 
-\2. 主键自增长，自增长的主键必须是整数
+##  主键自增长，自增长的主键必须是整数
 
   \* 因为主键列的特性是：必须唯一、不能为空，所以我们通常会指定主键类为整型，然后设置其自动增长，这样可以保证在插入数据时主键列的唯一和非空特性。
 
   \* 创建表时指定主键自增长
 
+```
   CREATE TABLE stu(
 
 ​		sid INT PRIMARY KEY AUTO_INCREMENT,
@@ -79,6 +78,7 @@
 ​		gender	VARCHAR(10)
 
   );
+```
 
   ![image-20221029174432511](img/image-20221029174432511.png)
 
@@ -90,17 +90,20 @@
 
   \* 测试主键自增长：
 
-​    \> INSERT INTO stu VALUES(NULL, 'zhangSan',23,'male');
+```
+INSERT INTO stu VALUES(NULL, 'zhangSan',23,'male');
 
-​    \> INSERT INTO stu(sname,age,gender) VALUES('zhangSan',23,'male');
+INSERT INTO stu(sname,age,gender) VALUES('zhangSan',23,'male');
+```
 
-\3. 非空约束
+## 非空约束
 
   \* 因为某些列不能设置为NULL值，所以可以对列添加非空约束。
 
   \* 例如：
 
-  CREATE TABLE stu(
+```
+ CREATE TABLE stu(
 
 ​		sid INT PRIMARY KEY AUTO_INCREMENT,
 
@@ -111,16 +114,18 @@
 ​		gender	VARCHAR(10)
 
   );
+```
 
   \* 对sname列设置了非空约束
 
-\4. 唯一约束
+## 唯一约束
 
   \* 车库某些列不能设置重复的值，所以可以对列添加唯一约束。
 
   \* 例如：
 
-  CREATE TABLE stu(
+```
+ CREATE TABLE stu(
 
 ​		sid INT PRIMARY KEY AUTO_INCREMENT,
 
@@ -131,10 +136,11 @@
 ​		gender	VARCHAR(10)
 
   );
+```
 
   \* 对sname列设置了非空约束
 
-\5. 概念模型
+## 概念模型
 
 对象模型：可以双向关联，而且引用的是对象，而不是一个主键！
 
@@ -176,7 +182,8 @@ use a
 
   多对一双向中关联，即员工关联部门，部门也关联员工
 
-  class Employee {//多方关联一方
+```
+class Employee {//多方关联一方
 
 ​     ...
 
@@ -223,8 +230,9 @@ use a
 ​     private List students;
 
   }
+```
 
-\6. 外键约束
+## 外键约束
 
   \* 外键必须是另一表的主键的值(外键要引用主键！)
 
@@ -244,9 +252,10 @@ use a
 
 概念模型在数据库中成为表
 
-  数据库表中的多对一关系，只需要在多方使用一个独立的列来引用1方的主键即可
+  数据库表中的多对一关系，只需要在多方使用一个独立的列来引用1方的主键即可  
 
-  /*员工表*/
+```
+/*员工表*/
 
   create talbe emp (
 
@@ -267,6 +276,7 @@ use a
 ​    ...
 
   );
+```
 
   emp表中的deptno列的值表示当前员工所从属的部门编号。也就是说emp.deptno必须在dept表中是真实存在！
 
@@ -278,7 +288,10 @@ use a
 
   创建表时指定外键约束
 
-  create talbe emp (
+  
+
+```
+create talbe emp (
 
 ​    empno int primary key,
 
@@ -289,38 +302,46 @@ use a
 ​    CONSTRAINT fk_emp FOREIGN KEY(mgr) REFERENCES emp(empno)  
 
   );
+```
 
-  修改表时添加外键约束
+  修改表时添加外键约束 
 
-  ALERT TABLE emp
+```
+ ALERT TABLE emp
 
-  ADD CONSTRAINT fk_emp_deptno FOREIGN KEY(deptno) REFERENCES dept(deptno);
+ ADD CONSTRAINT fk_emp_deptno FOREIGN KEY(deptno) REFERENCES dept(deptno);
+```
 
 ![image-20221029174615343](img/image-20221029174615343.png)
 
-  修改表时删除外键约束
+  修改表时删除外键约束 
 
-  ALTER TABLE emp
+```
+ ALTER TABLE emp
 
-  DROP FOREIGN KEY fk_emp_deptno;/*约束名称*/
+ DROP FOREIGN KEY fk_emp_deptno;/*约束名称*/
+```
 
   
 
-\7. 数据库一对一关系
+## 数据库一对一关系
 
   在表中建立一对一关系比较特殊，需要让其中一张表的主键，即是主键又是外键。
 
-  create table husband(
+```
+ create table husband(
 
 ​    hid int PRIMARY KEY,
 
 ​    ...
 
   );
+```
 
   ![image-20221029174626933](img/image-20221029174626933.png)
 
-  create table wife(
+```
+ create table wife(
 
 ​    wid int PRIMARY KEY,
 
@@ -329,6 +350,7 @@ use a
 ​    ADD CONSTRAINT fk_wife_wid FOREIGN KEY(wid) REFERENCES husband(hid)
 
   );
+```
 
   ![image-20221029174636872](img/image-20221029174636872.png)
 
@@ -342,12 +364,13 @@ use a
 
   同时在husband.hid中必须存在1这个值，因为wid是外键。这就完成了一对一关系。
 
- tip:  *****从表的主键即是外键！
+ tip: 从表的主键即是外键！
 
-\8. 数据库多对多关系
+## 数据库多对多关系
 
   tip: 在表中建立多对多关系需要使用中间表，即需要三张表，在中间表中使用两个外键，分别引用其他两个表的主键。
 
+```
   create table student(
 
 ​    sid int PRIMARY KEY,
@@ -355,9 +378,11 @@ use a
 ​    ...
 
   );
+```
 
 ![image-20221029174647988](img/image-20221029174647988.png)
 
+```
   create table teacher(
 
 ​    tid int PRIMARY KEY,
@@ -365,9 +390,11 @@ use a
 ​    ...
 
   );
+```
 
   ![image-20221029174655926](img/image-20221029174655926.png)
 
+```
   create table stu_tea(
 
 ​    sid int,
@@ -379,6 +406,7 @@ use a
 ​    ADD CONSTRAINT fk_stu_tea_tid FOREIGN KEY(tid) REFERENCES teacher(tid)
 
   );
+```
 
    ![image-20221029174705988](img/image-20221029174705988.png)
 

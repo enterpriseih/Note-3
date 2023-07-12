@@ -152,15 +152,29 @@ jobs:
 
 
 
+# 代码部署
+
+<img src="img/image-20230711231314208.png" alt="image-20230711231314208" style="zoom:50%;" />
 
 
 
+# 域名设计
 
+![image-20230711231701916](img/image-20230711231701916.png)
 
+![image-20230711231835446](img/image-20230711231835446.png)
 
+# Nginx转发
 
+<img src="img/image-20230711232204546.png" alt="image-20230711232204546" style="zoom:50%;" />
 
+<img src="img/image-20230711232259012.png" alt="image-20230711232259012" style="zoom:50%;" />
 
+<img src="img/image-20230711232323559.png" alt="image-20230711232323559" style="zoom:50%;" />
+
+# OSS
+
+![image-20230712222012190](img/image-20230712222012190.png)
 
 
 
